@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pianificazione task giornalieri</title>
+  <title>Pianificazione task giornalieri - Costruzione 24 ore</title>
   <style>
     :root {
       --ink: #1f2933;
@@ -347,6 +347,129 @@
       font-weight: 700;
     }
 
+    .builder {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      background: var(--white);
+    }
+
+    .top-grid {
+      display: block;
+    }
+
+    .suggestions,
+    .summary-grid {
+      display: none;
+    }
+
+    .builder-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 12px;
+    }
+
+    .builder-panel-title {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .candidate-list,
+    .selected-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .candidate {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--white);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .candidate.selected {
+      border-color: var(--brand);
+      background: var(--panel-strong);
+    }
+
+    .candidate input {
+      accent-color: var(--brand);
+    }
+
+    .candidate-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .candidate-hours {
+      color: var(--brand);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .builder-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .builder-actions button {
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .builder-page {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .builder-progress {
+      margin-bottom: 12px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .builder-progress strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .builder-status.ok { color: var(--ok); }
+    .builder-status.warn { color: var(--warn); }
+
+    .selected-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .selected-item button {
+      border: 0;
+      background: transparent;
+      color: var(--warn);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
     .task-table td > input,
     .task-table td > select,
     .task-table td > textarea,
@@ -570,6 +693,12 @@
         grid-column: 1 / -1;
       }
 
+      .builder-body {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 9px;
+      }
+
       .tasks {
         margin-top: 12px;
         overflow-x: auto;
@@ -616,6 +745,15 @@
         font-size: 10px;
         white-space: normal;
         overflow-wrap: anywhere;
+      }
+
+      .task-table th:nth-child(4),
+      .task-table td:nth-child(4),
+      .task-table th:nth-child(5),
+      .task-table td:nth-child(5),
+      .task-table th:nth-child(8),
+      .task-table td:nth-child(8) {
+        display: none !important;
       }
 
       .task-table th::before,
@@ -666,7 +804,7 @@
 </head>
 <body>
   <main>
-    <h1>Pianificazione task giornalieri</h1>
+    <h1>Pianificazione task giornalieri · Costruzione 24 ore</h1>
 
     <div class="top-grid">
       <div class="left-stack">
@@ -718,6 +856,33 @@
       </div>
     </div>
 
+    <section class="builder" aria-label="Costruzione interattiva delle 24 ore">
+      <div class="section-title">Costruzione interattiva delle 24 ore</div>
+      <div class="builder-body">
+        <div>
+          <p class="builder-panel-title">Scegli uno dei 5 task più lunghi</p>
+          <div class="candidate-list" id="builderCandidates"></div>
+          <div class="builder-actions">
+            <button type="button" id="builderAdd">Aggiungi al piano</button>
+            <button class="secondary" type="button" id="builderRefresh">Aggiorna candidati</button>
+            <button class="secondary" type="button" id="builderExport">Esporta piano</button>
+          </div>
+          <div class="builder-page">
+            <button class="secondary" type="button" id="builderPrevious">Vedi i 5 precedenti</button>
+            <button class="secondary" type="button" id="builderNext">Vedi altri 5</button>
+          </div>
+        </div>
+        <div>
+          <p class="builder-panel-title">Piano costruito</p>
+          <div class="builder-progress">
+            <strong><span id="builderTotal">0.00</span> / <span id="builderLimit">24.00</span> ore</strong>
+            <span id="builderRemaining" class="builder-status ok">24.00 ore residue</span>
+          </div>
+          <div class="selected-list" id="builderSelectedList"></div>
+        </div>
+      </div>
+    </section>
+
     <div class="toolbar">
       <input id="jsonFile" type="file" accept="application/json,.json" hidden>
       <button class="secondary" type="button" id="loadJson">Carica JSON</button>
@@ -747,7 +912,7 @@
       <table class="task-table" aria-label="Lista task">
         <thead>
           <tr>
-            <th style="width:82px">Fatto</th>
+            <th style="width:150px">Stimata = conservativa</th>
             <th data-sort-key="task" style="width:260px">Task</th>
             <th data-sort-key="estimated" style="width:140px">Durata stimata</th>
             <th data-sort-key="factor" style="width:170px">Fattore conservativo</th>
@@ -779,6 +944,9 @@
     const sortColumn = document.getElementById("sortColumn");
     const sortDirection = document.getElementById("sortDirection");
     const sortLevels = document.getElementById("sortLevels");
+    const builderSelected = new Set();
+    let builderPendingRow = null;
+    let builderPage = 0;
 
     function number(value) {
       const parsed = Number.parseFloat(value);
@@ -808,10 +976,10 @@
       return { hours: 0, valid: false, empty: false };
     }
 
-    function addRow(task = "", duration = "", essential = "No", planned = "No", note = "") {
+    function addRow(task = "", duration = "", essential = "No", planned = "No", note = "", useEstimated = false) {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td class="completion-cell"><input class="completion-checkbox" type="checkbox" aria-label="Segna task come completato"></td>
+        <td class="completion-cell"><input class="completion-checkbox" type="checkbox" aria-label="Usa durata stimata come conservativa"></td>
         <td><input type="text" value="${escapeHtml(task)}"></td>
         <td class="duration-cell"><input class="duration-input" type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="1h 30m" value="${escapeHtml(duration)}"><span class="duration-status"></span></td>
         <td><span class="duration-output factor-cell">0.00</span></td>
@@ -820,13 +988,12 @@
         <td><select><option>Sì</option><option>No</option></select></td>
         <td><textarea>${escapeHtml(note)}</textarea></td>
       `;
+      row.querySelector(".completion-checkbox").checked = useEstimated;
       row.querySelectorAll("select")[0].value = essential;
       row.querySelectorAll("select")[1].value = planned;
       row.addEventListener("input", recalc);
       row.addEventListener("change", recalc);
-      row.querySelector(".completion-checkbox").addEventListener("change", () => {
-        row.classList.toggle("completed-row", row.querySelector(".completion-checkbox").checked);
-      });
+      row.querySelector(".completion-checkbox").addEventListener("change", recalc);
       taskBody.appendChild(row);
     }
 
@@ -844,7 +1011,8 @@
         const taskInput = inputs[1];
         const durationInput = inputs[2];
         const [essentialSelect, plannedSelect] = row.querySelectorAll("select");
-        const factor = number(factorInput.value);
+        const useEstimated = inputs[0].checked;
+        const factor = useEstimated ? 1 : number(factorInput.value);
         const parsedDuration = parseDuration(durationInput.value);
         const estimated = parsedDuration.hours;
         return {
@@ -855,11 +1023,67 @@
           durationValid: parsedDuration.valid,
           durationEmpty: parsedDuration.empty,
           factor,
+          useEstimated,
           conservative: estimated * factor,
           essential: essentialSelect.value === "Sì",
           planned: plannedSelect.value === "Sì",
         };
       });
+    }
+
+    function builderCandidates() {
+      return getTasks()
+        .filter((item) => item.task && item.durationValid && item.conservative > 0 && !builderSelected.has(item.row))
+        .sort((a, b) => b.conservative - a.conservative)
+        .slice(builderPage * 5, builderPage * 5 + 5);
+    }
+
+    function renderBuilder() {
+      const availableCount = getTasks().filter((item) => item.task && item.durationValid && item.conservative > 0 && !builderSelected.has(item.row)).length;
+      builderPage = Math.min(builderPage, Math.max(0, Math.ceil(availableCount / 5) - 1));
+      const candidates = builderCandidates();
+      const candidatesElement = document.getElementById("builderCandidates");
+      candidatesElement.innerHTML = "";
+      if (!candidates.length) {
+        candidatesElement.innerHTML = '<span style="color:var(--muted);font-size:12px">Inserisci task con una durata valida.</span>';
+      }
+      candidates.forEach((item) => {
+        const label = document.createElement("label");
+        label.className = `candidate ${builderPendingRow === item.row ? "selected" : ""}`;
+        label.innerHTML = `<input type="radio" name="builderCandidate" ${builderPendingRow === item.row ? "checked" : ""}><span class="candidate-name">${escapeHtml(item.task)}</span><span class="candidate-hours">${fmt(item.conservative)} h</span>`;
+        label.querySelector("input").addEventListener("change", () => {
+          builderPendingRow = item.row;
+          renderBuilder();
+        });
+        candidatesElement.appendChild(label);
+      });
+
+      const selectedList = document.getElementById("builderSelectedList");
+      selectedList.innerHTML = "";
+      let total = 0;
+      builderSelected.forEach((rowElement) => {
+        const item = getTasks().find((task) => task.row === rowElement);
+        if (!item || !item.task) return;
+        total += item.conservative;
+        const row = document.createElement("div");
+        row.className = "selected-item";
+        row.innerHTML = `<span>${escapeHtml(item.task)} <strong>${fmt(item.conservative)} h</strong></span><button type="button">Rimuovi</button>`;
+        row.querySelector("button").addEventListener("click", () => {
+          builderSelected.delete(rowElement);
+          renderBuilder();
+        });
+        selectedList.appendChild(row);
+      });
+
+      const limit = number(dailyLimitInput.value) || 24;
+      const remaining = limit - total;
+      document.getElementById("builderTotal").textContent = fmt(total);
+      document.getElementById("builderLimit").textContent = fmt(limit);
+      const remainingElement = document.getElementById("builderRemaining");
+      remainingElement.textContent = remaining >= 0 ? `${fmt(remaining)} ore residue` : `Avviso: ${fmt(Math.abs(remaining))} ore oltre il limite`;
+      remainingElement.className = `builder-status ${remaining >= 0 ? "ok" : "warn"}`;
+      document.getElementById("builderPrevious").disabled = builderPage === 0;
+      document.getElementById("builderNext").disabled = (builderPage + 1) * 5 >= getTasks().filter((item) => item.task && item.durationValid && item.conservative > 0 && !builderSelected.has(item.row)).length;
     }
 
     function sortRows(key, additive = false, forcedDirection = null) {
@@ -1050,6 +1274,7 @@
         `;
         impactRows.appendChild(tr);
       }
+      renderBuilder();
     }
 
     function setText(id, value) {
@@ -1077,6 +1302,7 @@
             indispensable: essentialSelect.value === "Sì",
             plannedForToday: plannedSelect.value === "Sì",
             completed: row.querySelector(".completion-checkbox").checked,
+            useEstimatedAsConservative: row.querySelector(".completion-checkbox").checked,
             note,
           };
         }).filter((item) => item.task.trim() || item.estimatedHours > 0 || item.note.trim()),
@@ -1090,6 +1316,25 @@
       const link = document.createElement("a");
       link.href = url;
       link.download = "pianificazione-task.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportBuilderHtml() {
+      const selected = [];
+      builderSelected.forEach((rowElement) => {
+        const item = getTasks().find((task) => task.row === rowElement);
+        if (item && item.task) selected.push(item);
+      });
+      const total = selected.reduce((sum, item) => sum + item.conservative, 0);
+      const limit = number(dailyLimitInput.value) || 24;
+      const rows = selected.map((item, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(item.task)}</td><td>${fmt(item.estimated)} h</td><td>${fmt(item.conservative)} h</td><td>${item.essential ? "Sì" : "No"}</td></tr>`).join("");
+      const html = `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Piano giornaliero</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:32px auto;padding:0 18px;color:#1f2933}h1{color:#315a6e;border-bottom:2px solid #315a6e;padding-bottom:12px}.summary{padding:14px;background:#eef5f8;border:1px solid #cbd5df;margin:18px 0;font-size:18px}table{width:100%;border-collapse:collapse}th{background:#315a6e;color:#fff;text-align:left}th,td{padding:10px;border:1px solid #cbd5df}td:nth-child(1),td:nth-child(3),td:nth-child(4),td:nth-child(5){text-align:center}@media print{body{margin:0}}</style></head><body><h1>Piano giornaliero</h1><p>Generato il ${new Date().toLocaleString("it-IT")}</p><div class="summary"><strong>${fmt(total)} / ${fmt(limit)} ore</strong><br>${total <= limit ? `${fmt(limit - total)} ore residue` : `Avviso: ${fmt(total - limit)} ore oltre il limite`}</div><table><thead><tr><th>#</th><th>Task</th><th>Stimata</th><th>Conservativa</th><th>Indispensabile</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Nessun task selezionato</td></tr>'}</tbody></table></body></html>`;
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "piano-giornaliero-selezionato.html";
       link.click();
       URL.revokeObjectURL(url);
     }
@@ -1108,6 +1353,9 @@
       }
 
       taskBody.innerHTML = "";
+      builderSelected.clear();
+      builderPendingRow = null;
+      builderPage = 0;
       for (const item of payload.tasks) {
         const indispensable = item.indispensable === true || item.essential === true ? "Sì" : "No";
         const planned = item.plannedForToday === true || item.planned === true ? "Sì" : "No";
@@ -1117,6 +1365,7 @@
           indispensable,
           planned,
           item.note || "",
+          item.useEstimatedAsConservative === true || item.useEstimated === true,
         );
         const importedRow = taskBody.lastElementChild;
         const completed = item.completed === true || item.done === true;
@@ -1164,6 +1413,28 @@
       sortState.splice(0, sortState.length);
       applyCurrentSort();
     });
+    document.getElementById("builderAdd").addEventListener("click", () => {
+      if (!builderPendingRow || builderSelected.has(builderPendingRow)) return;
+      builderSelected.add(builderPendingRow);
+      builderPendingRow = null;
+      renderBuilder();
+    });
+    document.getElementById("builderRefresh").addEventListener("click", () => {
+      builderPendingRow = null;
+      builderPage = 0;
+      renderBuilder();
+    });
+    document.getElementById("builderPrevious").addEventListener("click", () => {
+      builderPage = Math.max(0, builderPage - 1);
+      builderPendingRow = null;
+      renderBuilder();
+    });
+    document.getElementById("builderNext").addEventListener("click", () => {
+      builderPage += 1;
+      builderPendingRow = null;
+      renderBuilder();
+    });
+    document.getElementById("builderExport").addEventListener("click", exportBuilderHtml);
     document.querySelectorAll(".task-table thead th[data-sort-key]").forEach((header) => {
       header.addEventListener("click", (event) => sortRows(header.dataset.sortKey, event.shiftKey));
     });
