@@ -500,7 +500,7 @@
       table.task-table {
         display: table !important;
         width: 100%;
-        min-width: 620px;
+        min-width: 0;
         table-layout: fixed;
       }
 
@@ -534,6 +534,7 @@
         padding: 8px 6px;
         font-size: 12px;
         white-space: normal;
+        overflow-wrap: anywhere;
       }
 
       .task-table th::before,
@@ -549,23 +550,24 @@
       }
 
       .task-table th:nth-child(1),
-      .task-table td:nth-child(1) { width: 54px; }
+      .task-table td:nth-child(1) { width: 28px; }
       .task-table th:nth-child(2),
-      .task-table td:nth-child(2) { width: 190px; }
+      .task-table td:nth-child(2) { width: 72px; }
       .task-table th:nth-child(3),
-      .task-table td:nth-child(3) { width: 116px; }
+      .task-table td:nth-child(3) { width: 56px; }
       .task-table th:nth-child(5),
-      .task-table td:nth-child(5) { width: 124px; }
+      .task-table td:nth-child(5) { width: 64px; }
       .task-table th:nth-child(6),
-      .task-table td:nth-child(6) { width: 112px; }
+      .task-table td:nth-child(6) { width: 52px; }
       .task-table th:nth-child(7),
-      .task-table td:nth-child(7) { width: 124px; }
+      .task-table td:nth-child(7) { width: 64px; }
 
       .task-table td > input,
       .task-table td > select,
       .task-table td > .duration-output {
         width: 100%;
         min-width: 0;
+        font-size: 11px;
       }
 
       .completion-checkbox {
@@ -574,7 +576,7 @@
       }
 
       .duration-cell {
-        height: 42px !important;
+        height: 48px !important;
         position: relative;
       }
 
@@ -739,7 +741,7 @@
       row.innerHTML = `
         <td class="completion-cell"><input class="completion-checkbox" type="checkbox" aria-label="Segna task come completato"></td>
         <td><input type="text" value="${escapeHtml(task)}"></td>
-        <td class="duration-cell"><input class="duration-input" type="text" inputmode="decimal" placeholder="es. 1h 30m" value="${escapeHtml(duration)}"><span class="duration-status"></span></td>
+        <td class="duration-cell"><input class="duration-input" type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="1h 30m" value="${escapeHtml(duration)}"><span class="duration-status"></span></td>
         <td><span class="duration-output factor-cell">0.00</span></td>
         <td><span class="duration-output conservative-cell">0.00</span></td>
         <td><select><option>Sì</option><option>No</option></select></td>
