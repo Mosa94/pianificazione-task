@@ -372,6 +372,41 @@
       display: none;
     }
 
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      background: #f7fafb;
+      color: #315a6e;
+      transition: opacity .25s ease, visibility .25s ease;
+    }
+
+    #splash-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-content {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    .splash-content img {
+      width: 92px;
+      height: 92px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(49, 90, 110, .18);
+    }
+
+    .splash-content strong {
+      font-size: 19px;
+    }
+
     .builder-body {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -638,7 +673,7 @@
       }
 
       .summary-grid {
-        display: block;
+        display: none !important;
       }
 
       .summary-grid > section[aria-label="Task non indispensabili con maggiore impatto"] {
@@ -776,11 +811,11 @@
       }
 
       .task-table th:nth-child(1),
-      .task-table td:nth-child(1) { width: 25px; }
+      .task-table td:nth-child(1) { width: 32px !important; }
       .task-table th:nth-child(2),
-      .task-table td:nth-child(2) { width: 76px; }
+      .task-table td:nth-child(2) { width: 210px !important; }
       .task-table th:nth-child(3),
-      .task-table td:nth-child(3) { width: 54px; }
+      .task-table td:nth-child(3) { width: 72px !important; }
       .task-table th:nth-child(5),
       .task-table td:nth-child(5),
       .task-table th:nth-child(6),
@@ -817,6 +852,12 @@
   </style>
 </head>
 <body>
+  <div id="splash-screen" role="status" aria-label="Caricamento app">
+    <div class="splash-content">
+      <img src="./icons/icon.svg" alt="">
+      <strong>Task giornalieri</strong>
+    </div>
+  </div>
   <main>
     <h1>Pianificazione task giornalieri · Costruzione 24 ore</h1>
 
@@ -924,7 +965,7 @@
       <table class="task-table" aria-label="Lista task">
         <thead>
           <tr>
-            <th style="width:150px">Stimata = conservativa</th>
+            <th style="width:150px">Usa stimata</th>
             <th data-sort-key="task" style="width:260px">Task</th>
             <th data-sort-key="estimated" style="width:140px">Durata stimata</th>
             <th data-sort-key="factor" style="width:170px">Fattore conservativo</th>
@@ -1470,6 +1511,12 @@
         navigator.serviceWorker.register("./service-worker.js");
       });
     }
+
+    window.addEventListener("load", () => {
+      window.setTimeout(() => {
+        document.getElementById("splash-screen").classList.add("hidden");
+      }, 450);
+    });
   </script>
 </body>
 </html>
