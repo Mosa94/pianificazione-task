@@ -464,33 +464,105 @@
     }
 
     @media (max-width: 700px) {
+      body {
+        background: var(--white);
+      }
+
       main {
-        padding: 16px 10px 28px;
+        max-width: none;
+        padding: 12px 8px 24px;
       }
 
       h1 {
-        font-size: 21px;
-        margin-bottom: 16px;
+        font-size: 20px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
       }
 
-      .summary-row {
-        grid-template-columns: minmax(145px, 1fr) 105px 48px;
+      .top-grid {
+        display: block;
+      }
+
+      .left-stack {
+        display: block;
+      }
+
+      .controls {
+        margin-bottom: 10px;
+      }
+
+      .control-row {
+        grid-template-columns: 1fr 92px;
+      }
+
+      .summary-grid {
+        display: block;
+      }
+
+      .summary-grid > section[aria-label="Task non indispensabili con maggiore impatto"] {
+        display: none;
+      }
+
+      .summary-grid > section[aria-label="Riepilogo giornata"] {
+        margin-bottom: 10px;
+      }
+
+      .section-title {
+        padding: 7px 8px;
         font-size: 13px;
       }
 
-      .toolbar {
-        justify-content: flex-start;
-        flex-wrap: wrap;
+      .summary-row {
+        grid-template-columns: minmax(145px, 1fr) 92px 40px;
+        font-size: 13px;
       }
 
-      .toolbar button,
+      .suggestions .metric-row:nth-child(5),
+      .suggestions .metric-row:nth-child(6),
+      .suggestions .metric-row:nth-child(7),
+      .suggestions .metric-row:nth-child(8) {
+        display: none;
+      }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .toolbar button {
+        width: 100%;
+        min-height: 38px;
+        padding: 7px 6px;
+        font-size: 12px;
+      }
+
+      .sort-hint {
+        display: none;
+      }
+
+      .sort-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
       .sort-controls select,
       .sort-controls button {
-        flex: 1 1 auto;
+        width: 100%;
+        min-height: 38px;
+        padding: 7px 6px;
+        font-size: 12px;
+      }
+
+      .sort-levels {
+        grid-column: 1 / -1;
       }
 
       .tasks {
-        margin-top: 18px;
+        margin-top: 12px;
         overflow-x: auto;
         border: 1px solid var(--line);
         background: var(--white);
@@ -531,8 +603,8 @@
       }
 
       .task-table th {
-        padding: 8px 6px;
-        font-size: 12px;
+        padding: 6px 3px;
+        font-size: 10px;
         white-space: normal;
         overflow-wrap: anywhere;
       }
@@ -550,24 +622,25 @@
       }
 
       .task-table th:nth-child(1),
-      .task-table td:nth-child(1) { width: 28px; }
+      .task-table td:nth-child(1) { width: 25px; }
       .task-table th:nth-child(2),
-      .task-table td:nth-child(2) { width: 72px; }
+      .task-table td:nth-child(2) { width: 76px; }
       .task-table th:nth-child(3),
-      .task-table td:nth-child(3) { width: 56px; }
+      .task-table td:nth-child(3) { width: 54px; }
       .task-table th:nth-child(5),
-      .task-table td:nth-child(5) { width: 64px; }
+      .task-table td:nth-child(5) { width: 62px; }
       .task-table th:nth-child(6),
-      .task-table td:nth-child(6) { width: 52px; }
+      .task-table td:nth-child(6) { width: 50px; }
       .task-table th:nth-child(7),
-      .task-table td:nth-child(7) { width: 64px; }
+      .task-table td:nth-child(7) { width: 58px; }
 
       .task-table td > input,
       .task-table td > select,
       .task-table td > .duration-output {
         width: 100%;
         min-width: 0;
-        font-size: 11px;
+        padding: 5px 3px;
+        font-size: 10px;
       }
 
       .completion-checkbox {
