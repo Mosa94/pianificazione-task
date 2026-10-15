@@ -1,0 +1,17 @@
+{
+  "name": "Pianificazione task giornalieri",
+  "short_name": "Task giornalieri",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7fafb",
+  "theme_color": "#315a6e",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
