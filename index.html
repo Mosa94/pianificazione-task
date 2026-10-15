@@ -1133,6 +1133,7 @@
         row.innerHTML = `<span>${escapeHtml(item.task)} <strong>${fmtDurationCompact(item.conservative)}</strong></span><button type="button">Rimuovi</button>`;
         row.querySelector("button").addEventListener("click", () => {
           builderSelected.delete(rowElement);
+          scheduleLocalSave();
           renderBuilder();
         });
         selectedList.appendChild(row);
@@ -1383,6 +1384,44 @@
       URL.revokeObjectURL(url);
     }
 
+    const LOCAL_SAVE_KEY = "pianificazione-task-giornalieri-v1";
+    let localSaveTimer = null;
+
+    function saveLocalState() {
+      try {
+        const state = exportState();
+        state.builderSelectedTasks = Array.from(builderSelected)
+          .map((rowElement) => getTasks().find((item) => item.row === rowElement))
+          .filter(Boolean)
+          .map((item) => item.task);
+        localStorage.setItem(LOCAL_SAVE_KEY, JSON.stringify(state));
+      } catch (error) {
+        // Local storage may be unavailable in private browsing or file previews.
+      }
+    }
+
+    function scheduleLocalSave() {
+      window.clearTimeout(localSaveTimer);
+      localSaveTimer = window.setTimeout(saveLocalState, 250);
+    }
+
+    function restoreLocalState() {
+      try {
+        const saved = localStorage.getItem(LOCAL_SAVE_KEY);
+        if (!saved) return;
+        const payload = JSON.parse(saved);
+        const selectedNames = Array.isArray(payload.builderSelectedTasks) ? payload.builderSelectedTasks.slice() : [];
+        importJson(payload);
+        selectedNames.forEach((name) => {
+          const item = getTasks().find((task) => task.task === name && !builderSelected.has(task.row));
+          if (item) builderSelected.add(item.row);
+        });
+        renderBuilder();
+      } catch (error) {
+        // Ignore an unavailable or corrupted browser save and keep the defaults.
+      }
+    }
+
     function exportBuilderHtml() {
       const selected = [];
       builderSelected.forEach((rowElement) => {
@@ -1480,6 +1519,7 @@
       if (!builderPendingRow || builderSelected.has(builderPendingRow)) return;
       builderSelected.add(builderPendingRow);
       builderPendingRow = null;
+      scheduleLocalSave();
       renderBuilder();
     });
     document.getElementById("builderRefresh").addEventListener("click", () => {
@@ -1505,6 +1545,12 @@
     for (const item of initialTasks) addRow(...item);
     for (let i = 0; i < 15; i += 1) addRow();
     recalc();
+    restoreLocalState();
+    taskBody.addEventListener("input", scheduleLocalSave);
+    taskBody.addEventListener("change", scheduleLocalSave);
+    factorInput.addEventListener("input", scheduleLocalSave);
+    dailyLimitInput.addEventListener("input", scheduleLocalSave);
+    window.addEventListener("beforeunload", saveLocalState);
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
