@@ -1068,31 +1068,47 @@
         .replace(/"/g, "&quot;");
     }
 
-    function getTasks() {
-      return [...taskBody.querySelectorAll("tr")].map((row) => {
-        const inputs = row.querySelectorAll("input");
-        const taskInput = inputs[1];
-        const durationInput = inputs[2];
-        const [essentialSelect, plannedSelect] = row.querySelectorAll("select");
-        const useEstimated = inputs[0].checked;
-        const factor = useEstimated ? 1 : number(factorInput.value);
-        const parsedDuration = parseDuration(durationInput.value);
-        const estimated = parsedDuration.hours;
-        return {
-          row,
-          task: taskInput.value.trim(),
-          estimated,
-          durationText: durationInput.value,
-          durationValid: parsedDuration.valid,
-          durationEmpty: parsedDuration.empty,
-          factor,
-          useEstimated,
-          conservative: estimated * factor,
-          essential: essentialSelect.value === "Sì",
-          planned: plannedSelect.value === "Sì",
-        };
-      });
+function getTasks() {
+  let conservativeIndex = 0;
+
+  return [...taskBody.querySelectorAll("tr")].map((row) => {
+    const inputs = row.querySelectorAll("input");
+    const taskInput = inputs[1];
+    const durationInput = inputs[2];
+    const [essentialSelect, plannedSelect] = row.querySelectorAll("select");
+
+    const useEstimated = inputs[0].checked;
+    const factor = useEstimated ? 1 : number(factorInput.value);
+    const parsedDuration = parseDuration(durationInput.value);
+    const estimated = parsedDuration.hours;
+
+    const planned = plannedSelect.value === "Sì";
+    const hasValidTask = taskInput.value.trim() && parsedDuration.valid && estimated > 0;
+
+    const extraMinutes = hasValidTask && planned
+      ? conservativeIndex + 1
+      : 0;
+
+    if (hasValidTask && planned) {
+      conservativeIndex += 1;
     }
+
+    return {
+      row,
+      task: taskInput.value.trim(),
+      estimated,
+      durationText: durationInput.value,
+      durationValid: parsedDuration.valid,
+      durationEmpty: parsedDuration.empty,
+      factor,
+      useEstimated,
+      conservative: estimated * factor + extraMinutes / 60,
+      extraMinutes,
+      essential: essentialSelect.value === "Sì",
+      planned,
+    };
+  });
+}
 
     function builderCandidates() {
       return getTasks()
